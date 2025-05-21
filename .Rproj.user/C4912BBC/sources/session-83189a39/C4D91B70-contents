@@ -1,0 +1,79 @@
+---
+title: "Coffe Rust Report"
+author: "Igor Fernandes Erhardt"
+date: 2025-05-21
+format:
+  html:
+    toc: true
+warning: false
+message: false
+---
+
+![](Coffee-tree-leaf-infected-with-an-advanced-stage-of-coffee-rust-3-This-advanced-stage_Q320.jpg){style="float: right" width="218"}
+
+#### **Library Import**
+
+##### Library import description:
+
+##### Gsheet: Data import from google sheet server
+
+##### DT: Create interactive dataframe display
+
+##### Tidyverse: For data handling
+
+##### Ggplot2: Graphs plotting
+
+```{R}
+library(gsheet)
+library(DT)
+library(tidyverse)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthhires)
+library(ggspatial)
+library(DHARMa)
+library(agricolae)
+```
+
+#### **Data Import**
+
+##### Data import from google sheet table using the `gsheet2tbl()` function from the library \[gsheet\]
+
+```{R}
+CoffeeRustDataframe = gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit?gid=1871397229#gid=1871397229")
+datatable(CoffeeRustDataframe)
+```
+
+#### **Data Visualization**
+
+```{R}
+CoffeeRustDataframe |>
+  group_by(farm_management)|>
+  ggplot(aes(farm_management, inc))+
+  geom_boxplot(outliers=FALSE)+
+  geom_jitter(width=0.1)
+
+AnovaRes = aov(inc ~farm_management, data=CoffeeRustDataframe)
+plot(simulateResiduals(AnovaRes))
+
+kruskal(CoffeeRustDataframe$inc, CoffeeRustDataframe$farm_management, group=TRUE, console=TRUE)
+```
+
+```{R}
+ETH = ne_states(country="Ethiopia",
+                returnclass = "sf")
+ETH |> 
+  ggplot()+
+  geom_sf(fill="grey90")+
+  geom_point(data=CoffeeRustDataframe, aes(lon, lat, color=inc), size=3)+
+  scale_color_viridis_c()+
+  scale_x_continuous(limits=c(34.5,40.5))+
+  scale_y_continuous(limits=c(5.5,10))+
+  theme_minimal()+
+  annotation_north_arrow(height=grid::unit(0.8, "cm"), width=grid::unit(0.8, "cm"), location="tr")+
+  annotation_scale(location="br")+
+  labs(title="Ethiopia Coffee Rust incidence",
+       x="Longitude", y="Latitude",
+       color="Incidence (%)")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
