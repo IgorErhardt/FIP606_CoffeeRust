@@ -31,6 +31,8 @@ library(ggplot2)
 library(rnaturalearth)
 library(rnaturalearthhires)
 library(ggspatial)
+library(DHARMa)
+library(agricolae)
 ```
 
 #### **Data Import**
@@ -43,6 +45,19 @@ datatable(CoffeeRustDataframe)
 ```
 
 #### **Data Visualization**
+
+```{R}
+CoffeeRustDataframe |>
+  group_by(farm_management)|>
+  ggplot(aes(farm_management, inc))+
+  geom_boxplot(outliers=FALSE)+
+  geom_jitter(width=0.1)
+
+AnovaRes = aov(inc ~farm_management, data=CoffeeRustDataframe)
+plot(simulateResiduals(AnovaRes))
+
+kruskal(CoffeeRustDataframe$inc, CoffeeRustDataframe$farm_management, group=TRUE, console=TRUE)
+```
 
 ```{R}
 ETH = ne_states(country="Ethiopia",
